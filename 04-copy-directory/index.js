@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
 
 const pathDir = path.join(path.dirname(__filename), 'files');
@@ -29,12 +29,12 @@ async function copyDir() {
   }); 
 
   try{
-    const files = await fs.promises.readdir(pathDir);
+    const files = await fs.readdir(pathDir);
     for(let file of files) {
       read(file, pathCopyDir);
     }
 
-    const coppedFiles = await fs.promises.readdir(pathCopyDir);
+    const coppedFiles = await fs.readdir(pathCopyDir);
     for(let coppedFile of coppedFiles ) {
       if(!files.includes(coppedFile)) {
         fs.unlink(path.join(pathCopyDir,coppedFile), (err) => {

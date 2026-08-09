@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
 
 const projectPath = path.join(path.dirname(__filename), 'project-dist');
@@ -9,7 +9,7 @@ async function concatenateStyles() {
     if(err) return console.log(err.message);
   });
 
-  const styleFiles = await fs.promises.readdir(stylesPath);
+  const styleFiles = await fs.readdir(stylesPath);
   
   for(let styleFile of styleFiles) {
     const stylePath = path.join(stylesPath, styleFile);
