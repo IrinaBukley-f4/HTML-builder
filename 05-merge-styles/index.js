@@ -1,5 +1,5 @@
 const fs = require('fs/promises');
-const path = require('path');
+const path = require('node:path');
 
 const projectPath = path.join(path.dirname(__filename), 'project-dist');
 const stylesPath = path.join(path.dirname(__filename), 'styles');

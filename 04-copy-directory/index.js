@@ -1,45 +1,24 @@
 const fs = require('fs/promises');
-const path = require('path');
+const path = require('node:path');
 
 const pathDir = path.join(path.dirname(__filename), 'files');
 const pathCopyDir = path.join(path.dirname(__filename),'files-copy');
 
-function init() {
-  fs.mkdir(pathCopyDir,  (error) => {
-    if (error) return console.error(error.message);
-  });
-}
-
-function read(name, pathLink) {
-  const fileLink = path.join(pathDir, name);  
-  fs.readFile(fileLink, (err, data) => {
-    if(err) return console.log(err.message);
-
-    fs.writeFile(path.join(pathLink, name), data, (err) => {
-      if(err) return console.log(err.message);
-    });
-  });
-}
-
 async function copyDir() {
-  fs.access(pathCopyDir, fs.F_OK, (err) => {
-    if (err) {
-      init();
-    }
-  }); 
-
   try{
+    await fs.mkdir(pathCopyDir, { recursive: true });
     const files = await fs.readdir(pathDir);
     for(let file of files) {
-      read(file, pathCopyDir);
+      const sourcePath = path.join(pathDir, file);
+      const targetPath = path.join(pathCopyDir, file);
+      await fs.copyFile(sourcePath, targetPath);
     }
 
     const coppedFiles = await fs.readdir(pathCopyDir);
     for(let coppedFile of coppedFiles ) {
       if(!files.includes(coppedFile)) {
-        fs.unlink(path.join(pathCopyDir,coppedFile), (err) => {
-          if(err) return console.log(err.message);
-        } );
+        const filePath = path.join(pathCopyDir, copiedFile);
+        await fs.unlink(filePath);
       }   
     }
 

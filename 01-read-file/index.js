@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const file = path.join(__dirname, 'text.txt');
 const stream = fs.createReadStream(file, 'UTF-8');
