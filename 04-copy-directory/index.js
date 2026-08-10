@@ -5,26 +5,28 @@ const pathDir = path.join(path.dirname(__filename), 'files');
 const pathCopyDir = path.join(path.dirname(__filename),'files-copy');
 
 async function copyDir() {
-  try{
-    await fs.mkdir(pathCopyDir, { recursive: true });
-    const files = await fs.readdir(pathDir);
-    for(let file of files) {
-      const sourcePath = path.join(pathDir, file);
-      const targetPath = path.join(pathCopyDir, file);
+  try {
+    await fs.rm(pathCopyDir, { recursive: true, force: true });
+    await copyFolder(pathDir, pathCopyDir);
+    console.log('All files are copied and actualized!');
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+
+async function copyFolder(source, target) {
+  await fs.mkdir(target, { recursive: true });
+  const items = await fs.readdir(source, { withFileTypes: true });
+  
+  for (const item of items) {
+    const sourcePath = path.join(source, item.name);
+    const targetPath = path.join(target, item.name);
+    
+    if (item.isDirectory()) {
+      await copyFolder(sourcePath, targetPath);
+    } else {
       await fs.copyFile(sourcePath, targetPath);
     }
-
-    const coppedFiles = await fs.readdir(pathCopyDir);
-    for(let coppedFile of coppedFiles ) {
-      if(!files.includes(coppedFile)) {
-        const filePath = path.join(pathCopyDir, copiedFile);
-        await fs.unlink(filePath);
-      }   
-    }
-
-    console.log('All files are copied and actualized!');
-  } catch(error) {
-    return console.error(error.message);
   }
-} 
+}
 copyDir();
