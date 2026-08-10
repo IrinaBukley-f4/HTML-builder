@@ -5,24 +5,27 @@ const projectPath = path.join(path.dirname(__filename), 'project-dist');
 const stylesPath = path.join(path.dirname(__filename), 'styles');
 
 async function concatenateStyles() {
-  fs.writeFile(path.join(projectPath, 'bundle.css'), '' , (err) => {
-    if(err) return console.log(err.message);
-  });
-
-  const styleFiles = await fs.readdir(stylesPath);
-  
-  for(let styleFile of styleFiles) {
-    const stylePath = path.join(stylesPath, styleFile);
-    const extention = path.extname(stylePath).slice(1);
-    if(extention == 'css') {
-      fs.readFile(stylePath, (err, data) => {
-        if(err) return console.log(err.message);
-        data = data + '\n';
-        fs.appendFile(path.join(projectPath, 'bundle.css'), data , (err) => {
-          if(err) return console.log(err.message);
-        });
-      });
+  try {
+    await fs.mkdir(projectPath, { recursive: true });
+    await fs.writeFile(path.join(projectPath, 'bundle.css'), '');
+    
+    const styleFiles = await fs.readdir(stylesPath);
+    let bundleContent = '';
+    
+    for (const styleFile of styleFiles) {
+      const stylePath = path.join(stylesPath, styleFile);
+      const extension = path.extname(stylePath).slice(1);
+      
+      if (extension === 'css') {
+        const data = await fs.readFile(stylePath, 'utf-8');
+        bundleContent += data + '\n';
+      }
     }
+    
+    await fs.writeFile(path.join(projectPath, 'bundle.css'), bundleContent);
+    console.log('Styles merged successfully!');
+  } catch (error) {
+    console.error(error.message);
   }
 }
 concatenateStyles();
