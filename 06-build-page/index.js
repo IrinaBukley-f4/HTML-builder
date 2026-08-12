@@ -48,28 +48,31 @@ async function updateIndex() {
   }
 }
 
-async function createDir(dirPath, dirName) {
-  const fullPath = path.join(dirPath, dirName);
+async function syncFolder(sourcePath, targetPath) {
   try {
-    await fs.access(fullPath);
-  } catch {
-    await fs.mkdir(fullPath);
-  }
-}
-
-async function copyFolder(sourcePath, targetPath) {
-  try {
-    const files = await fs.readdir(sourcePath);
+    await fs.mkdir(targetPath, { recursive: true });
     
-    for (const file of files) {
-      const filePath = path.join(sourcePath, file);
-      const stats = await fs.stat(filePath);
+    const sourceItems = await fs.readdir(sourcePath, { withFileTypes: true });
+    const targetItems = await fs.readdir(targetPath, { withFileTypes: true });
+    
+    const sourceNames = sourceItems.map(item => item.name);
+    const targetNames = targetItems.map(item => item.name);
+    
+    for (const targetName of targetNames) {
+      if (!sourceNames.includes(targetName)) {
+        const targetItemPath = path.join(targetPath, targetName);
+        await fs.rm(targetItemPath, { recursive: true, force: true });
+      }
+    }
+    
+    for (const item of sourceItems) {
+      const sourceItemPath = path.join(sourcePath, item.name);
+      const targetItemPath = path.join(targetPath, item.name);
       
-      if (stats.isDirectory()) {
-        await createDir(targetPath, file);
-        await copyFolder(filePath, path.join(targetPath, file));
+      if (item.isDirectory()) {
+        await syncFolder(sourceItemPath, targetItemPath);
       } else {
-        await fs.copyFile(filePath, path.join(targetPath, file));
+        await fs.copyFile(sourceItemPath, targetItemPath);
       }
     }
   } catch (error) {
@@ -78,14 +81,13 @@ async function copyFolder(sourcePath, targetPath) {
 }
 
 async function copyDir() {
-  await createDir(projectPath, 'assets');
   const assetsCopyPath = path.join(projectPath, 'assets');
-  await copyFolder(assetsPath, assetsCopyPath);
+  await syncFolder(assetsPath, assetsCopyPath);
 }
 
 async function buildHTML() {
   try {
-    await createDir(path.dirname(projectPath), 'project-dist');
+    await fs.mkdir(projectPath, { recursive: true });
     await copyDir();
     await concatenateStyles();
     await updateIndex();
