@@ -1,40 +1,29 @@
-const {stdin, stdout} = process;
+const { stdin, stdout } = process;
 const fs = require('node:fs');
 const path = require('node:path');
 
-function start() {
-  const pathFile = 'text.txt';
-  fs.access(pathFile, fs.constants.F_OK, (err) => {
-    if(err) {
-      fs.writeFile(
-        path.join(__dirname, 'text.txt'),
-        '',
-        (error) => {
-          if(error) throw err;
-        }
-      );
-    }
-  });
+const filePath = path.join(__dirname, 'text.txt');
+
+if (!fs.existsSync(filePath)) {
+  fs.writeFileSync(filePath, '');
 }
-start();
 
-stdout.write('Hi, enter text to safe it in a file! \n');
+stdout.write('Hi, enter text to save it in a file! \n');
 
-stdin.on('data', data=> {
-  process.on('SIGINT', () => {
-    stdout.write('Thanks! Bye!');
-    process.exit();
-  });
-  let str = data.toString().trim();
-  const isExit = str.includes('exit') && (str.indexOf('exit') == str.length - 4);
-
-  if(isExit) {
-    stdout.write('Bye-bye!');
+stdin.on('data', data => {
+  const input = data.toString().trim();
+  
+  if (input === 'exit' || input.endsWith('exit')) {
+    stdout.write('Bye-bye!\n');
     process.exit();
   } else {
-    str = str + '\n';
-    fs.appendFile(path.join(__dirname, 'text.txt'), str, (error) => {
-      if (error) return console.error(error.message);
+    fs.appendFile(filePath, input + '\n', (error) => {
+      if (error) console.error(error.message);
     });
   }
+});
+
+process.on('SIGINT', () => {
+  stdout.write('\nThanks! Bye!\n');
+  process.exit();
 });
